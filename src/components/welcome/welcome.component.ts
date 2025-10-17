@@ -9,8 +9,13 @@ import { ChangeDetectionStrategy, Component, output } from '@angular/core';
 })
 export class WelcomeComponent {
   start = output<void>();
+  viewSaved = output<void>();
 
   onStart(): void {
     this.start.emit();
+  }
+
+  onViewSaved(): void {
+    this.viewSaved.emit();
   }
 }

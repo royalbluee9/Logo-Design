@@ -6,8 +6,13 @@
     <p class="text-lg md:text-xl text-slate-300 mb-8">
       Craft a unique brand identity in minutes. Let our AI, trained by expert designers, guide you through a creative journey to design the perfect logo for your business.
     </p>
-    <button (click)="onStart()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 shadow-lg shadow-blue-500/30">
-      Start Designing Now
-    </button>
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <button (click)="onStart()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 shadow-lg shadow-blue-500/30 w-full sm:w-auto">
+        Start Designing Now
+      </button>
+      <button (click)="onViewSaved()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 w-full sm:w-auto">
+        View Saved Logos
+      </button>
+    </div>
   </div>
 </div>

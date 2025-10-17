@@ -1,7 +1,7 @@
 <main class="container mx-auto h-screen font-sans">
   @switch (appState()) {
     @case ('welcome') {
-      <app-welcome (start)="startDesigning()" />
+      <app-welcome (start)="startDesigning()" (viewSaved)="viewSavedLogos()" />
     }
     @case ('questionnaire') {
       <app-questionnaire [questions]="questions()" (submit)="handleQuestionnaireSubmit($event)" />
@@ -10,14 +10,26 @@
       <app-loading />
     }
     @case ('results') {
-      <app-results [logos]="generatedLogos()" (designAgain)="reset()" (submitRefinement)="handleRefinementSubmit($event)" />
+      <app-results 
+        [logos]="generatedLogos()" 
+        [savedLogos]="savedLogos()"
+        (startOver)="reset()" 
+        (edit)="handleRefinementSubmit($event)"
+        (save)="handleSaveLogo($event)" />
+    }
+    @case ('saved') {
+      <app-saved-logos
+        [logos]="savedLogos()"
+        (back)="reset()"
+        (delete)="handleDeleteLogo($event)"
+        (edit)="handleSavedLogoEditSubmit($event)" />
     }
     @case ('error') {
       <div class="flex flex-col items-center justify-center h-full text-center p-8 animate-fade-in">
         <div class="max-w-2xl bg-slate-800 p-8 rounded-xl border border-red-500/50">
           <h2 class="text-3xl font-bold text-red-400 mb-4">An Error Occurred</h2>
           <p class="text-slate-300 mb-6">{{ geminiServiceError() }}</p>
-          <button (click)="reset()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105">
+          <button (click)="goBackFromError()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105">
             Try Again
           </button>
         </div>

@@ -3,13 +3,15 @@ import { CommonModule } from '@angular/common';
 
 import { GeminiService } from './services/gemini.service';
 import { GeneratedLogo, Question } from './models/logo.model';
+import { LocalStorageService } from './services/local-storage.service';
 
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { QuestionnaireComponent } from './components/questionnaire/questionnaire.component';
 import { LoadingComponent } from './components/loading/loading.component';
 import { ResultsComponent } from './components/results/results.component';
+import { SavedLogosComponent } from './components/saved-logos/saved-logos.component';
 
-type AppState = 'welcome' | 'questionnaire' | 'loading' | 'results' | 'error';
+type AppState = 'welcome' | 'questionnaire' | 'loading' | 'results' | 'saved' | 'error';
 
 @Component({
   selector: 'app-root',
@@ -21,14 +23,18 @@ type AppState = 'welcome' | 'questionnaire' | 'loading' | 'results' | 'error';
     WelcomeComponent,
     QuestionnaireComponent,
     LoadingComponent,
-    ResultsComponent
+    ResultsComponent,
+    SavedLogosComponent
   ]
 })
 export class AppComponent {
   private geminiService = inject(GeminiService);
+  private localStorageService = inject(LocalStorageService);
 
   appState = signal<AppState>('welcome');
+  previousAppState = signal<AppState>('welcome');
   generatedLogos = signal<GeneratedLogo[]>([]);
+  savedLogos = this.localStorageService.savedLogos;
   
   readonly questions = signal<Question[]>([
     { id: 1, text: "What is your company's name?", placeholder: 'e.g., Nova Solutions', type: 'text' },
@@ -46,7 +52,12 @@ export class AppComponent {
     this.appState.set('questionnaire');
   }
 
+  viewSavedLogos(): void {
+    this.appState.set('saved');
+  }
+
   async handleQuestionnaireSubmit(answers: string[]): Promise<void> {
+    this.previousAppState.set(this.appState());
     this.appState.set('loading');
     this.generatedLogos.set([]);
     
@@ -71,6 +82,7 @@ export class AppComponent {
   }
 
   async handleRefinementSubmit({ logo, feedback }: { logo: GeneratedLogo, feedback: string }): Promise<void> {
+    this.previousAppState.set(this.appState());
     this.appState.set('loading');
 
     const refinedPrompt = await this.geminiService.refineLogoPrompt(logo.prompt, feedback);
@@ -100,6 +112,42 @@ export class AppComponent {
     });
 
     this.appState.set('results');
+  }
+
+  async handleSavedLogoEditSubmit({ logo, feedback }: { logo: GeneratedLogo, feedback: string }): Promise<void> {
+    this.previousAppState.set(this.appState());
+    this.appState.set('loading');
+
+    const refinedPrompt = await this.geminiService.refineLogoPrompt(logo.prompt, feedback);
+    if (!refinedPrompt || this.geminiService.error()) {
+      this.appState.set('error');
+      return;
+    }
+
+    const newLogos = await this.geminiService.generateImagesFromPrompts([refinedPrompt]);
+    if (newLogos.length === 0 || this.geminiService.error()) {
+      this.appState.set('error');
+      return;
+    }
+    const newLogo = newLogos[0];
+    
+    this.localStorageService.deleteLogo(logo);
+    this.localStorageService.saveLogo(newLogo);
+
+    this.appState.set('saved');
+  }
+
+  handleSaveLogo(logo: GeneratedLogo): void {
+    this.localStorageService.saveLogo(logo);
+  }
+
+  handleDeleteLogo(logo: GeneratedLogo): void {
+    this.localStorageService.deleteLogo(logo);
+  }
+
+  goBackFromError(): void {
+    this.geminiService.error.set(null);
+    this.appState.set(this.previousAppState());
   }
 
   reset(): void {

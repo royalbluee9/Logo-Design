@@ -1,18 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GeneratedLogo } from '../../models/logo.model';
 
 @Component({
-  selector: 'app-results',
+  selector: 'app-saved-logos',
   standalone: true,
   imports: [CommonModule],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="container mx-auto p-4 md:p-8 text-slate-100">
       <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl md:text-4xl font-bold">Your Logo Concepts</h1>
-        <button (click)="onStartOver()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300">
-          Start Over
+        <h1 class="text-3xl md:text-4xl font-bold">Your Saved Logos</h1>
+        <button (click)="onBack()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors duration-300">
+          Back to Start
         </button>
       </div>
 
@@ -27,18 +27,12 @@ import { GeneratedLogo } from '../../models/logo.model';
                 <span class="inline-block bg-sky-900/50 text-sky-300 text-sm font-semibold mr-2 px-2.5 py-0.5 rounded-full mb-4">{{ logo.style }}</span>
                 <p class="text-slate-400 text-sm mb-6 h-20 overflow-y-auto"><strong>Prompt:</strong> {{ logo.prompt }}</p>
                 <div class="flex justify-end items-center space-x-4">
+                  <button (click)="onDelete(logo)" class="text-red-400 hover:text-red-300 font-semibold transition-colors duration-300">
+                    Delete
+                  </button>
                   <button (click)="selectLogoForEditing(logo)" class="text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-300">
                     Edit
                   </button>
-                  @if (isLogoSaved(logo)) {
-                    <button class="bg-slate-600 text-slate-400 font-bold py-2 px-4 rounded-lg cursor-default" disabled>
-                      Saved
-                    </button>
-                  } @else {
-                    <button (click)="onSave(logo)" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
-                      Save Logo
-                    </button>
-                  }
                   <button (click)="downloadLogo(logo.base64Image, logo.style)" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">
                     Download
                   </button>
@@ -48,8 +42,12 @@ import { GeneratedLogo } from '../../models/logo.model';
           }
         </div>
       } @else {
-        <div class="text-center py-12">
-          <p class="text-xl text-slate-500">No logos were generated. Please try starting over.</p>
+        <div class="text-center py-12 flex flex-col items-center">
+          <svg class="w-16 h-16 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <p class="text-xl text-slate-500">You haven't saved any logos yet.</p>
+          <p class="text-slate-400 mt-2">Start designing to create and save your first logo!</p>
         </div>
       }
 
@@ -91,19 +89,14 @@ import { GeneratedLogo } from '../../models/logo.model';
     </div>
   `,
 })
-export class ResultsComponent {
+export class SavedLogosComponent {
   logos = input.required<GeneratedLogo[]>();
-  savedLogos = input<GeneratedLogo[]>([]);
   edit = output<{ logo: GeneratedLogo; feedback: string }>();
-  startOver = output<void>();
-  save = output<GeneratedLogo>();
+  back = output<void>();
+  delete = output<GeneratedLogo>();
 
   selectedLogoForEditing = signal<GeneratedLogo | null>(null);
   editingFeedback = signal('');
-
-  isLogoSaved(logo: GeneratedLogo): boolean {
-    return this.savedLogos().some(saved => saved.prompt === logo.prompt);
-  }
 
   selectLogoForEditing(logo: GeneratedLogo): void {
     this.selectedLogoForEditing.set(logo);
@@ -122,12 +115,12 @@ export class ResultsComponent {
     }
   }
 
-  onStartOver(): void {
-    this.startOver.emit();
+  onBack(): void {
+    this.back.emit();
   }
   
-  onSave(logo: GeneratedLogo): void {
-    this.save.emit(logo);
+  onDelete(logo: GeneratedLogo): void {
+    this.delete.emit(logo);
   }
 
   downloadLogo(base64Image: string, style: string): void {
