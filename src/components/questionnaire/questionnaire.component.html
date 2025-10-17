@@ -1,0 +1,58 @@
+<div class="flex flex-col items-center justify-center h-full p-4 md:p-8 animate-fade-in">
+  <div class="w-full max-w-2xl bg-slate-800 rounded-xl shadow-2xl p-6 md:p-10 border border-slate-700">
+    
+    <!-- Progress Bar -->
+    <div class="mb-6">
+      <div class="flex justify-between mb-1">
+        <span class="text-base font-medium text-blue-400">Step {{ currentQuestionIndex() + 1 }} of {{ questions().length }}</span>
+        <span class="text-sm font-medium text-blue-400">{{ progress() | number:'1.0-0' }}%</span>
+      </div>
+      <div class="w-full bg-slate-700 rounded-full h-2.5">
+        <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" [style.width.%]="progress()"></div>
+      </div>
+    </div>
+
+    <!-- Question -->
+    <h2 class="text-2xl md:text-3xl font-bold text-slate-100 mb-6 min-h-[90px]">{{ currentQuestion().text }}</h2>
+
+    <!-- Input -->
+    @if (currentQuestion().type === 'text') {
+      <input 
+        type="text" 
+        [value]="currentAnswer()"
+        (input)="updateAnswer($event)"
+        [placeholder]="currentQuestion().placeholder"
+        class="w-full p-4 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition duration-200"
+      >
+    } @else {
+      <textarea 
+        [value]="currentAnswer()"
+        (input)="updateAnswer($event)"
+        [placeholder]="currentQuestion().placeholder"
+        rows="4"
+        class="w-full p-4 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition duration-200"
+      ></textarea>
+    }
+
+    <!-- Navigation -->
+    <div class="flex justify-between items-center mt-8">
+      <button 
+        (click)="previousQuestion()" 
+        [disabled]="currentQuestionIndex() === 0"
+        class="px-6 py-2 text-slate-300 rounded-md transition hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed">
+        Back
+      </button>
+
+      <button 
+        (click)="nextQuestion()" 
+        [disabled]="currentAnswer().trim() === ''"
+        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-transform transform hover:scale-105 shadow-lg shadow-blue-500/30 disabled:bg-slate-600 disabled:shadow-none disabled:transform-none disabled:cursor-not-allowed">
+          @if (isLastQuestion()) {
+            <span>Generate Logos</span>
+          } @else {
+            <span>Next</span>
+          }
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,5 @@
+{
+  "name": "AI Logo Designer Pro",
+  "description": "An application that acts as a professional logo designer, asking targeted questions about your company's values and business type to generate unique, professional logos using AI.",
+  "requestFramePermissions": []
+}
